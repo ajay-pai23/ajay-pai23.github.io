@@ -838,8 +838,7 @@ textarea{resize:vertical;min-height:75px}
       <div class="modal-bd">
         <div class="ss">
           <h3>🎬 OMDB — MOVIES &amp; TV SHOWS</h3>
-          <p class="api-note">Searches movie &amp; TV show data (poster, year, genre, plot). Free key at <a href="https://www.omdbapi.com/apikey.aspx" class="alink" target="_blank">omdbapi.com/apikey.aspx</a><span class="abadge ab-free">Free</span></p>
-          <div class="api-row"><input type="password" id="keyOMDB" placeholder="Paste your OMDB API key..."></div>
+          <p class="api-note">Movie &amp; TV search is <strong style="color:var(--green)">active</strong> — powered by OMDB. No setup needed.</p>
         </div>
         <div class="ss">
           <h3>🌸 JIKAN — ANIME &amp; MANGA (MyAnimeList)</h3>
@@ -1090,10 +1089,12 @@ document.getElementById('logoutBtn').addEventListener('click', async ()=>{
 /* ══════════════════════════════════════════════════════════════
    APP CONFIG (per-browser, not per-user)
 ══════════════════════════════════════════════════════════════ */
-const CFG_KEY = 'otakuvault_config';
-const loadCfg = () => { try{ return JSON.parse(localStorage.getItem(CFG_KEY))||{} }catch{ return{} } };
-const saveCfg = c => localStorage.setItem(CFG_KEY, JSON.stringify(c));
-let cfg = loadCfg();
+const CFG_KEY    = 'otakuvault_config';
+const OMDB_KEY   = 'fa61ef7a';          // hardcoded — no manual entry needed
+const loadCfg    = () => { try{ return JSON.parse(localStorage.getItem(CFG_KEY))||{} }catch{ return{} } };
+const saveCfg    = c => localStorage.setItem(CFG_KEY, JSON.stringify(c));
+let cfg          = loadCfg();
+cfg.omdb         = OMDB_KEY;            // always override with the built-in key
 
 /* ══════════════════════════════════════════════════════════════
    APP STATE & DATA
@@ -1273,8 +1274,8 @@ function updateSearchHint(){
   const map={
     anime:{ph:'Type anime title (MyAnimeList / Jikan)',lbl:'Anime → Jikan (no key)'},
     manga:{ph:'Type manga title (MyAnimeList / Jikan)',lbl:'Manga → Jikan (no key)'},
-    movie:{ph:'Type movie title (OMDB)',lbl:'Movies → OMDB (key in ⚙)'},
-    tv   :{ph:'Type TV show title (OMDB)',lbl:'TV → OMDB (key in ⚙)'},
+    movie:{ph:'Type movie title (OMDB)',lbl:'Movies → OMDB ✅'},
+    tv   :{ph:'Type TV show title (OMDB)',lbl:'TV Shows → OMDB ✅'},
   };
   const h=map[cat]||{ph:'Type to search...',lbl:''};
   document.getElementById('apiSearch').placeholder=h.ph;
@@ -1433,7 +1434,7 @@ document.getElementById('sortSel').addEventListener('change',render);
 
 /* ── settings ────────────────────────────────────────────── */
 function loadSettingsUI(){
-  if(cfg.omdb)    document.getElementById('keyOMDB').value    =cfg.omdb;
+  // OMDB key is built-in — no UI field needed
   if(cfg.anilist) document.getElementById('keyAniList') && (document.getElementById('keyAniList').value=cfg.anilist);
   document.getElementById('enableJikan').checked=cfg.jikan!==false;
 }
@@ -1441,7 +1442,7 @@ document.getElementById('openSettings').addEventListener('click',()=>{ loadSetti
 document.getElementById('closeSettings').addEventListener('click',()=>closeModal('settingsModal'));
 document.getElementById('cancelSettings').addEventListener('click',()=>closeModal('settingsModal'));
 document.getElementById('saveSettings').addEventListener('click',()=>{
-  cfg.omdb  =document.getElementById('keyOMDB').value.trim();
+  cfg.omdb  = OMDB_KEY;   // always keep the built-in key
   cfg.jikan =document.getElementById('enableJikan').checked;
   saveCfg(cfg); closeModal('settingsModal'); toast('Settings saved ✅');
 });
@@ -1493,7 +1494,7 @@ async function doSearch(q){
     await searchOMDB(q,cat);
   } else {
     autoLst.innerHTML=`<div class="ac-load">${
-      (cat==='anime'||cat==='manga')?'Enable Jikan in ⚙ Settings':'Add OMDB API key in ⚙ Settings'}</div>`;
+      (cat==='anime'||cat==='manga')?'Enable Jikan in ⚙ Settings':'OMDB unavailable — try again'}</div>`;
     autoLst.style.display='block';
   }
 }
